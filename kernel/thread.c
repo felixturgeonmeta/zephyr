@@ -853,6 +853,19 @@ int z_stack_space_get(const uint8_t *stack_start, size_t size, size_t *unused_pt
 		size -= 4;
 	}
 
+	const uint32_t *checked_stack_word = (const uint32_t *)checked_stack;
+	size_t word_size = size / sizeof(uint32_t);
+	for (size_t i = 0; i < word_size; i++) {
+		if ((checked_stack_word[i]) == 0xaaaaaaaaU) {
+			unused += sizeof(uint32_t);
+		} else {
+			break;
+		}
+	}
+	/* Continue checking from last used word to find remaining unused bytes*/
+	size -= unused;
+	checked_stack = stack_start + unused;
+
 	for (size_t i = 0; i < size; i++) {
 		if ((checked_stack[i]) == 0xaaU) {
 			unused++;
